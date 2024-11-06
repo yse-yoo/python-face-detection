@@ -1,10 +1,16 @@
 
-### Install
+## Install
+### Case requirements.txt
+```bash
+pip install -r requirements.txt
+```
+
+### Case pip install 
 ```bash
 pip install fastapi uvicorn opencv-python numpy
 ```
 
-### launch
+## launch
 ```bash
 uvicorn main:app --reload
 ```
