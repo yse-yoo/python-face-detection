@@ -14,15 +14,27 @@ console.log(API_REGIST_FACE_URL)
 const dataTransfer = new DataTransfer();
 
 // カメラ起動処理
+// ローディング表示の制御関数
+const showLoading = () => {
+    document.getElementById('loading').style.display = 'flex';
+};
+const hideLoading = () => {
+    document.getElementById('loading').style.display = 'none';
+};
+
+// カメラ起動処理
 const onCamera = async (e) => {
+    showLoading(); // ローディング表示
     const stream = await navigator.mediaDevices.getUserMedia({ video: true });
     video.srcObject = stream;
     video.style.display = 'block';
     captureBtn.style.display = 'block';
-}
+    hideLoading(); // カメラ起動完了後にローディング非表示
+};
 
 // 画像キャプチャ処理
 const onCapture = async (e) => {
+    showLoading(); // キャプチャ中にローディング表示
     const context = canvas.getContext('2d');
     let count = 0;
 
@@ -41,6 +53,8 @@ const onCapture = async (e) => {
 
             count++;
             setTimeout(captureImage, 1000);
+        } else {
+            hideLoading(); // キャプチャ終了後にローディング非表示
         }
     };
 
@@ -49,23 +63,22 @@ const onCapture = async (e) => {
 
 // 登録処理
 const regist = async (e) => {
-    // TODO: get user_id
     const userId = document.getElementById('user-id').value;
     if (userId > 0) {
-        registFaces(userId);
+        await registFaces(userId);
     } else {
-        alert('invalid user id')
+        alert('invalid user id');
     }
-}
+};
 
 const registFaces = async (userId) => {
+    showLoading(); // 登録中にローディング表示
     const formData = new FormData();
     formData.append('user_id', userId);
-    // フォームデータにキャプチャされた画像ファイルを追加
+
     for (let i = 0; i < dataTransfer.files.length; i++) {
         formData.append('images', dataTransfer.files[i]);
     }
-    console.log(userId, dataTransfer.files)
 
     try {
         const response = await fetch(API_REGIST_FACE_URL, {
@@ -74,14 +87,17 @@ const registFaces = async (userId) => {
         });
         if (response.ok) {
             const result = await response.json();
-            console.log(result)
+            console.log(result);
         } else {
             throw new Error('Unexpected response format');
         }
     } catch (error) {
         message.textContent = `Error: ${error.message}`;
         message.style.color = 'red';
+    } finally {
+        hideLoading(); // 登録完了後にローディング非表示
     }
-}
+};
 
-onCamera()
+// カメラを起動
+onCamera();
